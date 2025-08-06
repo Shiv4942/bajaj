@@ -3,23 +3,23 @@ fastapi==0.111.0
 uvicorn==0.30.1
 python-dotenv==1.0.1
 
-# LangChain and plugins (All from same compatible version family)
+# LangChain + plugins (Compatible versions only)
 langchain==0.2.11
-langchain-core==0.3.55
+langchain-core==0.2.28
 langchain-community==0.2.11
 langchain-pinecone==0.2.11
 langchain-groq==0.1.4
 
-# Pinecone client
+# Pinecone
 pinecone-client==3.2.2
 
-# Embeddings & Transformers
+# Hugging Face / Transformers
 sentence-transformers==2.7.0
 transformers==4.41.1
 torch==2.3.0
 
-# PDF handling
+# PDF Parsing
 PyPDF2==3.0.1
 
-# Utilities
+# Misc
 typing-extensions==4.11.0
