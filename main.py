@@ -65,10 +65,11 @@ def clear_index():
 def process_pdf_files(pdf_files: List[UploadFile]):
     global vectorstore, index, embedding_model
 
-    # Initialize vectorstore if not already done (keeps existing documents)
-    if vectorstore is None:
-        vectorstore = PineconeVectorStore(index=index, embedding=embedding_model)
+    # Clear existing vectors before processing new documents
+    clear_index()
     
+    # Initialize fresh vectorstore
+    vectorstore = PineconeVectorStore(index=index, embedding=embedding_model)
     total_chunks = 0
 
     for pdf_file in pdf_files:
@@ -188,10 +189,9 @@ async def upload_pdf(files: List[UploadFile] = File(...)):
         chunks = process_pdf_files(files)
         stats = get_index_stats()
         return {
-            "message": f"{chunks} new document chunks processed successfully",
+            "message": f"{chunks} document chunks processed successfully",
             "files_processed": [f.filename for f in files],
-            "index_stats": stats,
-            "note": "Documents added to existing collection - queries will search all uploaded documents"
+            "index_stats": stats
         }
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
@@ -213,31 +213,6 @@ def get_status():
         "index_stats": stats
     }
 
-@app.get("/documents/")
-def list_documents():
-    """List all documents currently in the vector store"""
-    if not vectorstore:
-        return {"documents": [], "message": "No documents uploaded yet"}
-    
-    try:
-        # Get a sample of documents to see what's in the store
-        sample_docs = vectorstore.similarity_search("", k=50)  # Get more docs to see all sources
-        
-        # Extract unique source files
-        sources = set()
-        for doc in sample_docs:
-            source = doc.metadata.get("source_file", "Unknown")
-            upload_time = doc.metadata.get("upload_time", "Unknown")
-            sources.add(f"{source} (uploaded: {upload_time})")
-        
-        return {
-            "total_documents": len(sources),
-            "documents": sorted(list(sources)),
-            "total_chunks": len(sample_docs)
-        }
-    except Exception as e:
-        return {"error": f"Could not retrieve documents: {e}"}
-
 @app.post("/clear/")
 def clear_vectorstore():
     """Manually clear all vectors from the index"""
@@ -245,7 +220,7 @@ def clear_vectorstore():
         clear_index()
         global vectorstore
         vectorstore = None
-        return {"message": "Vector store cleared successfully - all documents removed"}
+        return {"message": "Vector store cleared successfully"}
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
