@@ -9,14 +9,13 @@ from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 
 from langchain_pinecone import PineconeVectorStore
-from langchain.embeddings import HuggingFaceBgeEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.document_loaders import PyPDFLoader
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 from langchain_groq import ChatGroq
 from pinecone import Pinecone, ServerlessSpec
-
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.document_loaders import PyPDFLoader
 load_dotenv()
 
 app = FastAPI()
@@ -43,12 +42,12 @@ def initialize_pinecone():
         time.sleep(10)
     return pc, pc.Index(index_name)
 
-# Initialize embeddings
+
 def initialize_embeddings():
-    return HuggingFaceBgeEmbeddings(
+    return HuggingFaceEmbeddings(
         model_name="BAAI/bge-large-en-v1.5",
         model_kwargs={"device": "cpu"},
-        encode_kwargs={"normalize_embeddings": True},
+        encode_kwargs={"normalize_embeddings": True}
     )
 
 # PDF processing and indexing
@@ -159,3 +158,4 @@ async def upload_pdf(files: List[UploadFile] = File(...)):
 async def query_pdf(question: str = Form(...)):
     result = process_query(question)
     return result
+
