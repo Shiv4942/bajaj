@@ -16,6 +16,7 @@ from langchain_groq import ChatGroq
 from pinecone import Pinecone, ServerlessSpec
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.document_loaders import PyPDFLoader
+
 load_dotenv()
 
 app = FastAPI()
@@ -42,7 +43,6 @@ def initialize_pinecone():
         time.sleep(10)
     return pc, pc.Index(index_name)
 
-
 def initialize_embeddings():
     return HuggingFaceEmbeddings(
         model_name="BAAI/bge-large-en-v1.5",
@@ -50,14 +50,30 @@ def initialize_embeddings():
         encode_kwargs={"normalize_embeddings": True}
     )
 
+# Clear existing vectors from index
+def clear_index():
+    global index
+    try:
+        # Delete all vectors from the index
+        index.delete(delete_all=True)
+        print("✅ Cleared all existing vectors from index")
+        time.sleep(2)  # Wait a moment for deletion to complete
+    except Exception as e:
+        print(f"⚠️ Warning: Could not clear index: {e}")
+
 # PDF processing and indexing
 def process_pdf_files(pdf_files: List[UploadFile]):
     global vectorstore, index, embedding_model
 
-    vectorstore = PineconeVectorStore(index=index, embedding=embedding_model)
+    # Initialize vectorstore if not already done (keeps existing documents)
+    if vectorstore is None:
+        vectorstore = PineconeVectorStore(index=index, embedding=embedding_model)
+    
     total_chunks = 0
 
     for pdf_file in pdf_files:
+        print(f"Processing file: {pdf_file.filename}")
+        
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
             shutil.copyfileobj(pdf_file.file, tmp)
             tmp_path = tmp.name
@@ -78,11 +94,15 @@ def process_pdf_files(pdf_files: List[UploadFile]):
             separators=["\n\n", "\n", ". ", ", ", " ", ""]
         )
         chunks = text_splitter.split_documents(docs)
+        
+        # Add documents to vectorstore
         vectorstore.add_documents(chunks)
         total_chunks += len(chunks)
+        print(f"Added {len(chunks)} chunks from {pdf_file.filename}")
 
         os.unlink(tmp_path)
 
+    print(f"✅ Total chunks processed: {total_chunks}")
     return total_chunks
 
 # Query processing
@@ -98,7 +118,6 @@ def process_query(query_text: str):
     llm = ChatGroq(
         model_name="llama-3.3-70b-versatile",
         groq_api_key=groq_api_key,
-        
     )
 
     prompt_template = """Use the following pieces of context to answer the question at the end.
@@ -133,10 +152,23 @@ Answer (one sentence):"""
         "sources": [
             {
                 "source": doc.metadata.get("source_file", "Unknown"),
-                "excerpt": doc.page_content[:300]
+                "excerpt": doc.page_content[:300] + "..."
             } for doc in result.get("source_documents", [])[:3]
         ]
     }
+
+# Get current index stats
+def get_index_stats():
+    global index
+    try:
+        stats = index.describe_index_stats()
+        return {
+            "total_vectors": stats.total_vector_count,
+            "dimension": stats.dimension,
+            "index_fullness": stats.index_fullness
+        }
+    except Exception as e:
+        return {"error": f"Could not get index stats: {e}"}
 
 # API Endpoints
 
@@ -146,11 +178,21 @@ def startup_event():
     pc, index = initialize_pinecone()
     embedding_model = initialize_embeddings()
 
+@app.get("/")
+def read_root():
+    return {"message": "PDF RAG API is running!", "status": "healthy"}
+
 @app.post("/upload/")
 async def upload_pdf(files: List[UploadFile] = File(...)):
     try:
         chunks = process_pdf_files(files)
-        return {"message": f"{chunks} document chunks processed successfully"}
+        stats = get_index_stats()
+        return {
+            "message": f"{chunks} new document chunks processed successfully",
+            "files_processed": [f.filename for f in files],
+            "index_stats": stats,
+            "note": "Documents added to existing collection - queries will search all uploaded documents"
+        }
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
@@ -159,10 +201,55 @@ async def query_pdf(question: str = Form(...)):
     result = process_query(question)
     return result
 
+@app.get("/status/")
+def get_status():
+    global vectorstore, index, embedding_model
+    stats = get_index_stats()
+    return {
+        "status": "running",
+        "vectorstore_initialized": vectorstore is not None,
+        "index_initialized": index is not None,
+        "embedding_model_initialized": embedding_model is not None,
+        "index_stats": stats
+    }
+
+@app.get("/documents/")
+def list_documents():
+    """List all documents currently in the vector store"""
+    if not vectorstore:
+        return {"documents": [], "message": "No documents uploaded yet"}
+    
+    try:
+        # Get a sample of documents to see what's in the store
+        sample_docs = vectorstore.similarity_search("", k=50)  # Get more docs to see all sources
+        
+        # Extract unique source files
+        sources = set()
+        for doc in sample_docs:
+            source = doc.metadata.get("source_file", "Unknown")
+            upload_time = doc.metadata.get("upload_time", "Unknown")
+            sources.add(f"{source} (uploaded: {upload_time})")
+        
+        return {
+            "total_documents": len(sources),
+            "documents": sorted(list(sources)),
+            "total_chunks": len(sample_docs)
+        }
+    except Exception as e:
+        return {"error": f"Could not retrieve documents: {e}"}
+
+@app.post("/clear/")
+def clear_vectorstore():
+    """Manually clear all vectors from the index"""
+    try:
+        clear_index()
+        global vectorstore
+        vectorstore = None
+        return {"message": "Vector store cleared successfully - all documents removed"}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 10000))  
     uvicorn.run("main:app", host="0.0.0.0", port=port)
-
-
-
