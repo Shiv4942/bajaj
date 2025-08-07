@@ -5,7 +5,7 @@ import shutil
 import requests
 from typing import List, Dict, Any
 
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends, status, UploadFile, File, Form
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -477,3 +477,4 @@ if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 10000))  
     uvicorn.run("main:app", host="0.0.0.0", port=port)
+
