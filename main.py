@@ -266,9 +266,8 @@ async def hackrx_run(
 # Keep your original endpoints for development/testing
 @app.post("/upload/")
 async def upload_pdf(files: List[UploadFile] = File(...)):
-    """Your original upload endpoint for development"""
     try:
-        chunks = process_pdf_files(files)
+        chunks = process_pdf_files(files)  # assumes you handle multiple UploadFile instances
         stats = get_index_stats()
         return {
             "message": f"{chunks} document chunks processed successfully",
@@ -277,6 +276,7 @@ async def upload_pdf(files: List[UploadFile] = File(...)):
         }
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
+
 
 @app.post("/query/")
 async def query_pdf(question: str = Form(...)):
@@ -477,4 +477,5 @@ if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 10000))  
     uvicorn.run("main:app", host="0.0.0.0", port=port)
+
 
