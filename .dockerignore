@@ -1,0 +1,382 @@
+# .dockerignore - Optimized for HackRX RAG API
+# This file reduces Docker build context size and improves build speed
+
+# ===== PYTHON SPECIFIC =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ===== VIRTUAL ENVIRONMENTS =====
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+.conda/
+conda-meta/
+.python-version
+
+# ===== ENVIRONMENT & CONFIG =====
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.*.local
+config.ini
+secrets.json
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+
+# ===== TESTING & COVERAGE =====
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+htmlcov/
+.mutmut-cache
+test_*.db
+tests/fixtures/
+tests/output/
+
+# ===== DOCUMENTATION =====
+README.md
+README.rst
+CHANGELOG.md
+CONTRIBUTING.md
+LICENSE
+LICENSE.txt
+docs/
+*.md
+*.rst
+*.txt
+!requirements.txt
+!requirements-*.txt
+
+# ===== VERSION CONTROL =====
+.git/
+.gitignore
+.gitattributes
+.gitmodules
+.github/
+.gitlab-ci.yml
+.travis.yml
+.appveyor.yml
+
+# ===== IDE & EDITOR FILES =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.vim/
+.emacs.d/
+.sublime-project
+.sublime-workspace
+*.sublime-*
+.spyderproject
+.spyproject
+.ropeproject
+
+# ===== LOGS & TEMPORARY FILES =====
+*.log
+logs/
+log/
+*.tmp
+*.temp
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ===== DATABASE FILES =====
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+db.sqlite3
+database.db
+data/
+*.dump
+*.sql
+
+# ===== MEDIA & UPLOADS =====
+uploads/
+media/
+static/collected/
+temp/
+tmp/
+*.pdf
+*.doc
+*.docx
+*.xls
+*.xlsx
+*.ppt
+*.pptx
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.tiff
+*.ico
+*.svg
+*.webp
+*.mp3
+*.mp4
+*.avi
+*.mov
+*.wmv
+*.flv
+*.webm
+!static/img/favicon.ico
+
+# ===== ML/AI MODELS & CACHE =====
+models/
+model/
+*.pkl
+*.pickle
+*.joblib
+*.model
+*.h5
+*.pb
+*.onnx
+*.bin
+*.safetensors
+checkpoints/
+weights/
+pretrained/
+
+# HuggingFace cache directories
+.cache/
+huggingface_hub/
+transformers_cache/
+sentence_transformers/
+torch/
+.torch/
+hub/
+
+# Pinecone cache
+.pinecone/
+
+# Other ML frameworks
+.tensorflow/
+.keras/
+sklearn_cache/
+joblib/
+
+# ===== PACKAGE MANAGERS =====
+node_modules/
+.npm
+.yarn
+yarn-error.log
+package-lock.json
+yarn.lock
+.pnpm-store/
+
+pip-log.txt
+pip-delete-this-directory.txt
+.pip-cache/
+
+# ===== BUILD & DEPLOYMENT =====
+Dockerfile*
+!Dockerfile
+docker-compose*.yml
+!docker-compose.yml
+.dockerignore
+build.sh
+deploy.sh
+k8s/
+kubernetes/
+helm/
+terraform/
+.terraform/
+*.tfstate
+*.tfstate.backup
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+.circleci/
+.jenkins/
+Jenkinsfile
+azure-pipelines.yml
+buildspec.yml
+
+# ===== MONITORING & PROFILING =====
+*.prof
+.profiling/
+monitoring/
+grafana/
+prometheus/
+profile_*.html
+memory_profile_*.dat
+
+# ===== SECURITY & SECRETS =====
+.aws/
+.azure/
+.gcp/
+credentials/
+secrets/
+*.key
+*.crt
+*.pem
+*.p12
+*.pfx
+.gnupg/
+.ssh/
+authorized_keys
+known_hosts
+
+# ===== JUPYTER NOTEBOOKS =====
+.ipynb_checkpoints/
+*.ipynb
+notebook/
+notebooks/
+*.nb.html
+jupytext.toml
+
+# ===== SPECIFIC TO YOUR PROJECT =====
+# Add any project-specific files here
+
+# Development scripts
+scripts/dev/
+dev/
+development/
+local/
+
+# Archive files
+*.zip
+*.tar
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.rar
+*.7z
+
+# Backup files
+*.bak
+*.backup
+*.old
+*~
+#*#
+
+# OS generated files
+.directory
+.fseventsd
+.volume*
+.com.apple.timemachine.donotpresent
+.AppleDouble
+.LSOverride
+
+# Windows
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.nfs*
+
+# ===== KEEP ESSENTIAL FILES =====
+# Use ! to explicitly include files you need
+!main.py
+!requirements.txt
+!.env.example
+!static/favicon.ico
+!docs/api.md
+
+# ===== PERFORMANCE OPTIMIZATION =====
+# These patterns help reduce build context size significantly
+
+# Skip large directories that aren't needed
+experiments/
+research/
+archive/
+backup/
+old/
+deprecated/
+legacy/
+
+# Skip heavy development dependencies
+.mypy_cache/
+.ruff_cache/
+.black_cache/
+.bandit/
+.safety/
+htmlcov/
+
+# Skip IDE project files
+*.project
+*.pydevproject
+.metadata
+.gradle/
+.settings/
+bin/
+.classpath
+
+# Skip temporary build artifacts
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.so
+*.dylib
+*.dll
+*.exe
+
+# Skip OS-specific files
+.fuse_hidden*
+.gvfs
+.xdg-volume-info/
+.Trash-*/
+.nfs*
+
+# ===== COMMENTS & NOTES =====
+# Docker will ignore all files matching these patterns
+# This reduces build context from potentially GB to MB
+# Faster builds, smaller images, better security
+# Remember: smaller build context = faster Docker builds
