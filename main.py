@@ -12,7 +12,7 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 
 from langchain_pinecone import PineconeVectorStore
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.chains import RetrievalQA
@@ -204,14 +204,15 @@ Answer:"""
 
 def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
     """Verify Bearer token - accepting any non-empty token for HackRX"""
-    if not credentials.token:
+    token = credentials.credentials
+    if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or missing token",
             headers={"WWW-Authenticate": "Bearer"}
         )
-    print(f"✅ Token verified: {credentials.token[:10]}...")
-    return credentials.token
+    print(f"✅ Token verified: {token[:10]}...")
+    return token
 
 # Main HackRX endpoint - EXACTLY as specified
 @app.post("/hackrx/run", response_model=HackRXResponse)
@@ -477,5 +478,4 @@ if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 10000))  
     uvicorn.run("main:app", host="0.0.0.0", port=port)
-
 
