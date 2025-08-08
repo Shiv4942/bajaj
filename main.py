@@ -1,4 +1,4 @@
-import os
+
 import time
 import tempfile
 import shutil
@@ -475,7 +475,17 @@ async def startup_event():
         print(f"❌ Failed to initialize services: {e}")
 
 if __name__ == "__main__":
+    import os
     import uvicorn
-    port = int(os.environ.get("PORT", 10000))  
-    uvicorn.run("main:app", host="0.0.0.0", port=port)
+    
+    port = int(os.environ.get("PORT", 10000))
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=port,
+        reload=True,
+        log_level="debug"
+    )
+
+
 
